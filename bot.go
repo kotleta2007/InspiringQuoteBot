@@ -16,11 +16,7 @@ func assertErrorToNilf(message string, err error) {
 }
 
 func main() {
-	//fmt.Println()
 	b, err := tb.NewBot(tb.Settings{
-		// You can also set custom API URL.
-		// If field is empty it equals to "https://api.telegram.org".
-		//URL: "http://195.129.111.17:8012",
 		URL: "",
 
 		Token:  "",
@@ -28,7 +24,7 @@ func main() {
 	})
 
 	if err != nil {
-		log.Fatal(err)
+		log.Fatalf("could not create bot: %v", err)
 		return
 	}
 
@@ -51,11 +47,7 @@ func main() {
 
 	assertErrorToNilf("could not click: %v", page.Click("div.btn-text"))
 
-	fmt.Println("bot started")
-
-	b.Handle("/hello", func(m *tb.Message) {
-		b.Send(m.Sender, "Hello World!")
-	})
+	fmt.Println("Bot started.")
 
 	b.Handle("/start", func(m *tb.Message) {
 		b.Send(m.Sender, "Say /generate")
@@ -64,18 +56,12 @@ func main() {
 	b.Handle("/generate", func(m *tb.Message) {
 		b.Send(m.Sender, "generating image")
 
+		assertErrorToNilf("could not click: %v", page.Click("div.btn-text"))
+
 		time.Sleep(1 * time.Second)
 
 		//url, err := page.EvalOnSelector("img.generated-image", "el => el.src")
 		url, _ := page.EvalOnSelector("img.generated-image", "el => el.src")
-
-		/*
-			if _, err = page.Screenshot(playwright.PageScreenshotOptions{
-				Path: playwright.String("foo.png"),
-			}); err != nil {
-				log.Fatalf("could not create screenshot: %v", err)
-			}
-		*/
 
 		/*
 			if err = browser.Close(); err != nil {
