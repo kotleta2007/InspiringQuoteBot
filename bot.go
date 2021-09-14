@@ -9,25 +9,22 @@ import (
 	tb "gopkg.in/tucnak/telebot.v2"
 )
 
-func assertErrorToNilf(message string, err error) {
-	if err != nil {
-		log.Fatalf(message, err)
-	}
-}
-
 func main() {
+	// Creating bot
 	b, err := tb.NewBot(tb.Settings{
 		URL: "",
 
 		Token:  "",
 		Poller: &tb.LongPoller{Timeout: 10 * time.Second},
 	})
-
 	if err != nil {
 		log.Fatalf("could not create bot: %v", err)
 		return
 	}
 
+	// FROM HERE
+
+	// Opening browser, navigating to the page, loading first image
 	pw, err := playwright.Run()
 	if err != nil {
 		log.Fatalf("could not start playwright: %v", err)
@@ -40,12 +37,19 @@ func main() {
 	if err != nil {
 		log.Fatalf("could not create page: %v", err)
 	}
-
-	if _, err = page.Goto("https://inspirobot.me/"); err != nil {
+	_, err = page.Goto("https://inspirobot.me/")
+	if err != nil {
 		log.Fatalf("could not goto: %v", err)
 	}
+	err = page.Click("div.btn-text")
+	if err != nil {
+		log.Fatalf("could not click: %v", err)
+	}
 
-	assertErrorToNilf("could not click: %v", page.Click("div.btn-text"))
+	// TO HERE
+	// move to corresponding goroutine
+
+	// check if message channel is full, then start
 
 	fmt.Println("Bot started.")
 
@@ -56,7 +60,10 @@ func main() {
 	b.Handle("/generate", func(m *tb.Message) {
 		b.Send(m.Sender, "generating image")
 
-		assertErrorToNilf("could not click: %v", page.Click("div.btn-text"))
+		err = page.Click("div.btn-text")
+		if err != nil {
+			log.Fatalf("could not click: %v", err)
+		}
 
 		time.Sleep(1 * time.Second)
 
@@ -82,5 +89,8 @@ func main() {
 
 	})
 
-	b.Start()
+	go b.Start()
+
+	// TODO: replace with signal handling
+	fmt.Scanln()
 }
